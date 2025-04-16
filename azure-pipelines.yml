@@ -1,0 +1,93 @@
+trigger:
+  - main
+
+variables:
+  vmConnectionName: 'sample-nest-api-server-connection'  # Replace with your VM service connection name
+  vmIpAddress: '74.224.121.57'  # Replace with your VM's IP address or DNS name
+  vmUsername: 'azureuser'  # Replace with your VM username
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+  - stage: Build
+    displayName: 'Build and Test'
+    jobs:
+      - job: BuildAndTest
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: '20.x'
+            displayName: 'Install Node.js'
+
+          - script: |
+              npm ci
+            displayName: 'Install Dependencies'
+
+          - script: |
+              npm run lint
+            displayName: 'Run Lint'
+
+          - script: |
+              npm run test
+            displayName: 'Run Unit Tests'
+
+          - script: |
+              npm run test:e2e
+            displayName: 'Run E2E Tests'
+
+          - script: |
+              npm run build
+            displayName: 'Build Application'
+
+          - task: ArchiveFiles@2
+            inputs:
+              rootFolderOrFile: '$(System.DefaultWorkingDirectory)'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+              replaceExistingArchive: true
+              excludeFiles: |
+                node_modules/**
+                coverage/**
+                test/**
+                .git/**
+
+          - task: PublishBuildArtifacts@1
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+              ArtifactName: 'drop'
+              publishLocation: 'Container'
+
+  - stage: Deploy
+    displayName: 'Deploy to VM'
+    dependsOn: Build
+    condition: succeeded()
+    jobs:
+      - job: Deploy
+        steps:
+          - task: DownloadBuildArtifacts@1
+            inputs:
+              buildType: 'current'
+              downloadType: 'single'
+              artifactName: 'drop'
+              downloadPath: '$(System.ArtifactsDirectory)'
+
+          - task: CopyFilesOverSSH@0
+            inputs:
+              sshEndpoint: '$(vmConnectionName)'
+              sourceFolder: '$(System.ArtifactsDirectory)/drop'
+              contents: '**'
+              targetFolder: '/home/$(vmUsername)/sample-api'
+              cleanTargetFolder: true
+
+          - task: SSH@0
+            inputs:
+              sshEndpoint: '$(vmConnectionName)'
+              runOptions: 'commands'
+              commands: |
+                cd /home/$(vmUsername)/sample-api
+                npm ci --production
+                pm2 delete sample-api || true
+                pm2 start dist/main.js --name sample-api
+              failOnStdErr: false
