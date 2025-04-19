@@ -93,7 +93,7 @@ stages:
               sshEndpoint: '$(vmConnectionName)'
               runOptions: 'commands'
               commands: |
-                mv /tmp/$(System.ArtifactsDirectory)/drop/$(Build.BuildId)/* /home/$(vmUsername)/sample-api
+                mv /tmp$(System.ArtifactsDirectory)/drop/$(Build.BuildId)/* /home/$(vmUsername)/sample-api
                 cd /home/$(vmUsername)/sample-api                
                 npm ci --production
                 pm2 start /home/azureuser/ecosystem.config.js
