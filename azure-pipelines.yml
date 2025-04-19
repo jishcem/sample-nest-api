@@ -81,17 +81,19 @@ stages:
               targetFolder: '/home/$(vmUsername)/sample-api'
               cleanTargetFolder: true
 
+          - task: ExtractFiles@1
+            inputs:
+              archiveFilePatterns: '$(System.ArtifactsDirectory)/drop/$(Build.BuildId).zip'
+              destinationFolder: '/home/$(vmUsername)/sample-api'
+              cleanDestinationFolder: true
+              overwriteExistingFiles: true
+
           - task: SSH@0
             inputs:
               sshEndpoint: '$(vmConnectionName)'
               runOptions: 'commands'
-              commands: |
-                # Install unzip if not present
-                which unzip || sudo apt-get update && sudo apt-get install -y unzip
-                
-                cd /home/$(vmUsername)/sample-api
-                unzip -o *.zip -d .
-                rm *.zip
+              commands: |               
+                cd /home/$(vmUsername)/sample-api                
                 npm ci --production
                 pm2 start /home/azureuser/ecosystem.config.js
                 pm2 save
