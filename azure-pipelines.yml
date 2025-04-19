@@ -76,7 +76,7 @@ stages:
           - task: CopyFilesOverSSH@0
             inputs:
               sshEndpoint: '$(vmConnectionName)'
-              sourceFolder: '$(System.ArtifactsDirectory)/drop'
+              sourceFolder: '$(System.DefaultWorkingDirectory)/extracted'
               contents: '**'
               targetFolder: '/home/$(vmUsername)/sample-api'
               cleanTargetFolder: true
@@ -84,18 +84,33 @@ stages:
           - task: ExtractFiles@1
             inputs:
               archiveFilePatterns: '$(System.ArtifactsDirectory)/drop/$(Build.BuildId).zip'
-              destinationFolder: '$(System.ArtifactsDirectory)/drop/$(Build.BuildId)'
+              destinationFolder: '$(System.DefaultWorkingDirectory)/extracted'
               cleanDestinationFolder: true
               overwriteExistingFiles: true
+
+          - task: CopyFilesOverSSH@0
+            inputs:
+              sshEndpoint: '$(vmConnectionName)'
+              sourceFolder: '$(System.DefaultWorkingDirectory)/extracted'
+              contents: '**'
+              targetFolder: '/home/$(vmUsername)/sample-api'
+              cleanTargetFolder: true
 
           - task: SSH@0
             inputs:
               sshEndpoint: '$(vmConnectionName)'
               runOptions: 'commands'
               commands: |
-                mv $(System.ArtifactsDirectory)/drop/$(Build.BuildId)/* /home/$(vmUsername)/sample-api                
-                cd /home/$(vmUsername)/sample-api                
+                cd /home/$(vmUsername)/sample-api
+                # Install dependencies
                 npm ci --production
+                # Stop any existing PM2 process
+                pm2 stop sample-api-1 || true
+                pm2 delete sample-api-1 || true
+                # Start new PM2 process
                 pm2 start /home/azureuser/ecosystem.config.js
+                # Save PM2 process list
                 pm2 save
+                # Show running processes
+                pm2 list
               failOnStdErr: false
