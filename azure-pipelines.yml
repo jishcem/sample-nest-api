@@ -84,7 +84,7 @@ stages:
           - task: ExtractFiles@1
             inputs:
               archiveFilePatterns: '$(System.ArtifactsDirectory)/drop/$(Build.BuildId).zip'
-              destinationFolder: '/home/$(vmUsername)/sample-api'
+              destinationFolder: '$(System.ArtifactsDirectory)/drop/$(Build.BuildId)'
               cleanDestinationFolder: true
               overwriteExistingFiles: true
 
@@ -92,7 +92,8 @@ stages:
             inputs:
               sshEndpoint: '$(vmConnectionName)'
               runOptions: 'commands'
-              commands: |               
+              commands: |
+                mv $(System.ArtifactsDirectory)/drop/$(Build.BuildId)/* /home/$(vmUsername)/sample-api                
                 cd /home/$(vmUsername)/sample-api                
                 npm ci --production
                 pm2 start /home/azureuser/ecosystem.config.js
