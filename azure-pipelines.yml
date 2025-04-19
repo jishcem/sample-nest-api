@@ -84,7 +84,7 @@ stages:
           - task: ExtractFiles@1
             inputs:
               archiveFilePatterns: '$(System.ArtifactsDirectory)/drop/$(Build.BuildId).zip'
-              destinationFolder: '/home/$(vmUsername)/sample-api'
+              destinationFolder: '/tmp/$(System.ArtifactsDirectory)/drop/$(Build.BuildId)'
               cleanDestinationFolder: true
               overwriteExistingFiles: true
 
