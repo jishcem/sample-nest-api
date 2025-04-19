@@ -87,6 +87,8 @@ stages:
               runOptions: 'commands'
               commands: |
                 cd /home/$(vmUsername)/sample-api
+                unzip -o *.zip -d .
+                rm *.zip
                 npm ci --production
                 pm2 start /home/azureuser/ecosystem.config.js
                 pm2 save
