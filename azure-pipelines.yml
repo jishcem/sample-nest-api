@@ -81,6 +81,13 @@ stages:
               targetFolder: '/home/$(vmUsername)/sample-api'
               cleanTargetFolder: true
 
+          - task: ExtractFiles@1
+            inputs:
+              archiveFilePatterns: '$(System.ArtifactsDirectory)/drop/$(Build.BuildId).zip'
+              destinationFolder: '/home/$(vmUsername)/sample-api'
+              cleanDestinationFolder: true
+              overwriteExistingFiles: true
+
           - task: SSH@0
             inputs:
               sshEndpoint: '$(vmConnectionName)'
