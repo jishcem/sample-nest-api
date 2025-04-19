@@ -87,7 +87,9 @@ stages:
               runOptions: 'commands'
               commands: |
                 cd /home/$(vmUsername)/sample-api
-                unzip -o $(Build.BuildId).zip
+                ls -la
+                # Unzip the first zip file found
+                unzip -o *.zip
                 rm $(Build.BuildId).zip
                 npm ci --production
                 pm2 stop sample-api-1 || true
