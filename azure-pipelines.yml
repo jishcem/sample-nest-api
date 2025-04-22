@@ -86,6 +86,7 @@ stages:
               sshEndpoint: '$(vmConnectionName)'
               runOptions: 'commands'
               commands: |
+                sudo chown -R $(vmUsername):$(vmUsername) /home/$(vmUsername)/sample-api
                 cd /home/$(vmUsername)/sample-api
                 unzip -o /home/$(vmUsername)/sample-api/$(Build.BuildId).zip
                 rm /home/$(vmUsername)/sample-api/$(Build.BuildId).zip
