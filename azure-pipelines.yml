@@ -88,8 +88,21 @@ stages:
               commands: |
                 sudo chown -R $(vmUsername):$(vmUsername) /home/$(vmUsername)/sample-api
                 cd /home/$(vmUsername)/sample-api
-                unzip -o /home/$(vmUsername)/sample-api/$(Build.BuildId).zip
-                rm /home/$(vmUsername)/sample-api/$(Build.BuildId).zip
+
+                # Create a temporary directory for extraction
+                rm -rf temp_extract
+                mkdir temp_extract
+                
+                # Extract to temp directory
+                unzip -o *.zip -d temp_extract
+                
+                # Move files from temp to current directory
+                cp -r temp_extract/* .
+                
+                # Cleanup
+                rm -rf temp_extract
+                rm -f *.zip
+
                 npm ci --production
                 pm2 stop sample-api-1 || true
                 pm2 delete sample-api-1 || true
