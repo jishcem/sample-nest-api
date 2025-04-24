@@ -3,7 +3,7 @@ trigger:
 
 variables:
   vmConnectionName: 'sample-nest-api-server-ssh'  # Replace with your VM service connection name!
-  vmIpAddress: '74.224.124.128'  # Replace with your VM's IP address or DNS name
+  vmIpAddress: '20.235.149.187'  # Replace with your VM's IP address or DNS name
   vmUsername: 'azureuser'  # Replace with your VM username
 
 pool:
@@ -86,23 +86,9 @@ stages:
               sshEndpoint: '$(vmConnectionName)'
               runOptions: 'commands'
               commands: |
-                sudo chown -R $(vmUsername):$(vmUsername) /home/$(vmUsername)/sample-api
                 cd /home/$(vmUsername)/sample-api
-
-                # Create a temporary directory for extraction
-                rm -rf temp_extract
-                mkdir temp_extract
-                
-                # Extract to temp directory
-                unzip -o *.zip -d temp_extract
-                
-                # Move files from temp to current directory
-                cp -r temp_extract/* .
-                
-                # Cleanup
-                rm -rf temp_extract
-                rm -f *.zip
-
+                unzip -o /home/$(vmUsername)/sample-api/$(Build.BuildId).zip
+                rm /home/$(vmUsername)/sample-api/$(Build.BuildId).zip
                 npm ci --production
                 pm2 stop sample-api-1 || true
                 pm2 delete sample-api-1 || true
