@@ -3,7 +3,7 @@ trigger:
 
 variables:
   vmConnectionName: 'sample-nest-api-server-ssh'  # Replace with your VM service connection name!
-  vmIpAddress: '20.235.149.187'  # Replace with your VM's IP address or DNS name
+  vmIpAddress: '74.224.125.93'  # Replace with your VM's IP address or DNS name
   vmUsername: 'azureuser'  # Replace with your VM username
 
 pool:
